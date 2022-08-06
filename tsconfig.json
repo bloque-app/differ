@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.common.json",
+  "compilerOptions": {
+    "moduleResolution": "Node16",
+    "outDir": "dist/esm"
+  },
+  "ts-node": {
+    "esm": true
+  }
+}
