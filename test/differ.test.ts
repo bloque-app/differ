@@ -27,7 +27,7 @@ test("#differ()", async (t) => {
 
       target.a = 1;
       assert(!hasChanged(target));
-    }
+    },
   );
 
   await t.test(
@@ -42,7 +42,7 @@ test("#differ()", async (t) => {
 
       target.c.a = 2;
       assert(hasChanged(target));
-    }
+    },
   );
 
   await t.test(
@@ -55,6 +55,36 @@ test("#differ()", async (t) => {
 
       target.c[0].a = 3;
       assert(hasChanged(target));
-    }
+    },
   );
+});
+
+test("injectedFields->toJSON()", async (t) => {
+  await t.test("injected fields' JSON structure be the same as the original, no matter how the inner injection structure works", () => {
+    const origin = {
+      a: [1, 2],
+      b: 3,
+    };
+    const target = differ(structuredClone(origin));
+
+    console.log({
+      origin,
+      jsonOrigin: JSON.stringify(origin),
+      target,
+      jsonTarget: JSON.stringify(target)
+    });
+
+    assert.strictEqual(
+      Object.getOwnPropertySymbols(origin).find((symbol) =>
+        symbol.description === "Differ.Changed", undefined),
+        undefined
+    );
+    assert.ok(
+      Object.getOwnPropertySymbols(target).find((symbol) =>
+        symbol.description === "Differ.Changed"
+      )
+    );
+
+    assert.deepEqual(JSON.stringify(origin), JSON.stringify(target));
+  });
 });

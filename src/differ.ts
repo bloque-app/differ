@@ -47,10 +47,14 @@ function injectFields<T>(objectId: string, target: T, parentTarget?: T) {
 
   Object.assign(target, {
     toJSON() {
+      if (Array.isArray(target)) {
+        return target;
+      }
+
       return keys.reduce((o, k) => {
-        o[k] = (<Record<string, unknown>>target)[`_${k}`];
+        o[k] = (<Record<string, unknown>> this)[`_${k}`];
         return o;
-      }, <Record<string, unknown>>{});
+      }, <Record<string, unknown>> {});
     },
   });
 
@@ -103,9 +107,9 @@ export function differAll<T>(target: T[]): T[] {
 }
 
 export function hasChanged<T>(target: T) {
-  return (<Differ>target)[Changed];
+  return (<Differ> target)[Changed];
 }
 
 export function isNew<T>(target: T) {
-  return (<Differ>target)[IsNew] ?? false;
+  return (<Differ> target)[IsNew] ?? false;
 }

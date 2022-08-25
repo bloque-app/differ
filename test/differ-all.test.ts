@@ -19,11 +19,11 @@ test("#differAll()", async (t) => {
 
     list.push({ a: 2 });
 
-    console.log(isNew(list[0])); // false
-    console.log(isNew(list[1])); // true
+    assert(!isNew(list[0]));
+    assert(isNew(list[1]));
 
     list[1].a = 3;
 
-    console.log(hasChanged(list[1])); // true
+    assert(hasChanged(list[1]));
   })
 });
