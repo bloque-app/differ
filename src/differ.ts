@@ -1,4 +1,4 @@
-import jsum from "jsum";
+import { digest } from "./digest.js";
 
 const Changed = Symbol.for("Differ.Changed");
 const IsNew = Symbol.for("Differ.IsNew");
@@ -11,10 +11,6 @@ type Differ = Record<string, unknown> & {
 };
 
 const digestMap: Map<string, { initial: string; current: string }> = new Map();
-
-function digest<T>(target: T) {
-  return jsum.digest(target, "SHA256", "hex");
-}
 
 function injectFields<T>(objectId: string, target: T, parentTarget?: T) {
   const keys = Object.keys(target);
