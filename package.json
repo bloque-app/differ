@@ -1,5 +1,5 @@
 {
-  "name": "differ",
+  "name": "@pandres95/differ",
   "type": "module",
   "version": "1.0.0",
   "description": "wraps objects and arrays and keeps track of global changes around wrapped objects",
@@ -32,5 +32,8 @@
   },
   "dependencies": {
     "crypto-digest-sync": "^1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
