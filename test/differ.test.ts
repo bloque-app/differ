@@ -64,15 +64,11 @@ test("injectedFields->toJSON()", async (t) => {
     const origin = {
       a: [1, 2],
       b: 3,
+      c: {
+        a: [1, 2]
+      }
     };
     const target = differ(structuredClone(origin));
-
-    console.log({
-      origin,
-      jsonOrigin: JSON.stringify(origin),
-      target,
-      jsonTarget: JSON.stringify(target)
-    });
 
     assert.strictEqual(
       Object.getOwnPropertySymbols(origin).find((symbol) =>
