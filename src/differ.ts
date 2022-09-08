@@ -13,12 +13,12 @@ type Differ = Record<string, unknown> & {
 const digestMap: Map<string, { initial: string; current: string }> = new Map();
 
 function injectFields<T>(objectId: string, target: T, parentTarget?: T) {
-  const keys = Object.keys(target);
+  const keys = Object.keys(target || {});
 
-  for (const [key, value] of Object.entries(target)) {
+  for (const [key, value] of Object.entries(target || {})) {
     if (typeof value === "object") {
       Object.assign(target, {
-        [key]: injectFields(objectId, value, parentTarget ?? target),
+        [key]: injectFields(objectId, value, <any>(parentTarget ?? target)),
       });
     } else if (value instanceof Array) {
       Object.assign(target, {
