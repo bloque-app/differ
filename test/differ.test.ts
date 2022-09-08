@@ -57,6 +57,20 @@ test("#differ()", async (t) => {
       assert(hasChanged(target));
     },
   );
+
+  
+  await t.test(
+    "null fields not breaks the code",
+    () => {
+      const target = differ({
+        field: null,
+        b: 2,
+      })
+
+      target.b = 1;
+
+      assert(hasChanged(target));
+    });
 });
 
 test("injectedFields->toJSON()", async (t) => {
