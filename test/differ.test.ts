@@ -71,6 +71,18 @@ test("#differ()", async (t) => {
     }
   );
 
+  await t.test("native subindices should be injected", () => {
+    const target = differ({
+      a: 3,
+      b: [ 2, "a" ],
+      c: undefined,
+    });
+
+    target.a = 1;
+
+    assert(hasChanged(target));
+  });
+
   await t.test("null or undefined fields should not break the code", () => {
     const target = differ({
       a: null,

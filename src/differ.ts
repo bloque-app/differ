@@ -10,7 +10,9 @@ function injectFields<T extends Record<string, unknown>>(
   for (const [key, value] of Object.entries(target)) {
     if (Array.isArray(value)) {
       Object.assign(target, {
-        [key]: value.map((object) => injectFields(object, parent)),
+        [key]: value.map((object) =>
+          typeof object === "object" ? injectFields(object, parent) : object
+        ),
       });
     } else if (typeof value === "object" && value !== null) {
       Object.assign(target, {
@@ -18,21 +20,23 @@ function injectFields<T extends Record<string, unknown>>(
       });
     }
 
-    Object.defineProperty(target, `_${key}`, {
-      value: target[key],
-      writable: true,
-      enumerable: false,
-    });
+    if (typeof target !== "object" || target !== null) {
+      Object.defineProperty(target, `_${key}`, {
+        value: target[key],
+        writable: true,
+        enumerable: false,
+      });
 
-    Object.defineProperty(target, key, {
-      set(v) {
-        this[`_${key}`] = v;
-        parent[Current] = digest(parent);
-      },
-      get() {
-        return this[`_${key}`];
-      },
-    });
+      Object.defineProperty(target, key, {
+        set(v) {
+          this[`_${key}`] = v;
+          parent[Current] = digest(parent);
+        },
+        get() {
+          return this[`_${key}`];
+        },
+      });
+    }
   }
 
   if (parent === target) {
@@ -96,9 +100,11 @@ export function differAll<T>(
   return output;
 }
 
-export function injectNew<T> (target: Differ<T>, isNew: boolean | undefined) {
+export function injectNew<T>(target: Differ<T>, isNew: boolean | undefined) {
   Object.defineProperty(target, IsNew, {
-    get () { return isNew },
+    get() {
+      return isNew;
+    },
     configurable: false,
   });
 }
