@@ -1,7 +1,7 @@
 {
   "name": "@pandres95/differ",
   "type": "module",
-  "version": "1.0.2",
+  "version": "1.1.1",
   "description": "wraps objects and arrays and keeps track of global changes around wrapped objects",
   "main": "./dist/cjs/src/differ.js",
   "scripts": {
@@ -12,12 +12,12 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/esm/src/differ.d.ts",
-        "default": "./dist/esm/src/differ.js"
+        "types": "./dist/esm/src/index.d.ts",
+        "default": "./dist/esm/src/index.js"
       },
       "require": {
-        "types": "./dist/cjs/src/differ.d.ts",
-        "default": "./dist/cjs/src/differ.js"
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
       }
     }
   },

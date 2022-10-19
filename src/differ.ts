@@ -1,35 +1,25 @@
 import { digest } from "./digest.js";
+import { Changed, IsNew, Differ, Current, Initial, isDiffer } from "./types.js";
 
-const Changed = Symbol.for("Differ.Changed");
-const IsNew = Symbol.for("Differ.IsNew");
+function injectFields<T extends Record<string, unknown>>(
+  target: T,
+  parent: Differ<T> = <Differ<T>>target
+): Differ<T> | Record<string, unknown> {
+  const keys = Object.keys(target);
 
-type ChangedFunc = () => boolean;
-
-type Differ = Record<string, unknown> & {
-  [IsNew]?: boolean;
-  [Changed]: boolean;
-};
-
-const digestMap: Map<string, { initial: string; current: string }> = new Map();
-
-function injectFields<T>(objectId: string, target: T, parentTarget?: T) {
-  const keys = Object.keys(target || {});
-
-  for (const [key, value] of Object.entries(target || {})) {
-    if (typeof value === "object") {
+  for (const [key, value] of Object.entries(target)) {
+    if (Array.isArray(value)) {
       Object.assign(target, {
-        [key]: injectFields(objectId, value, <any>(parentTarget ?? target)),
+        [key]: value.map((object) => injectFields(object, parent)),
       });
-    } else if (value instanceof Array) {
+    } else if (typeof value === "object" && value !== null) {
       Object.assign(target, {
-        [key]: value.map((t) =>
-          injectFields(objectId, t, parentTarget ?? target)
-        ),
+        [key]: injectFields(<Record<string, unknown>>value, parent),
       });
     }
 
     Object.defineProperty(target, `_${key}`, {
-      value,
+      value: target[key],
       writable: true,
       enumerable: false,
     });
@@ -37,7 +27,7 @@ function injectFields<T>(objectId: string, target: T, parentTarget?: T) {
     Object.defineProperty(target, key, {
       set(v) {
         this[`_${key}`] = v;
-        digestMap.get(objectId)!.current = digest(parentTarget ?? target);
+        parent[Current] = digest(parent);
       },
       get() {
         return this[`_${key}`];
@@ -45,17 +35,17 @@ function injectFields<T>(objectId: string, target: T, parentTarget?: T) {
     });
   }
 
-  if ((parentTarget ?? target) === target) {
-    Object.assign(target, {
-      toJSON() {
-        if (Array.isArray(target)) {
-          return target;
+  if (parent === target) {
+    Object.defineProperty(parent, "toJSON", {
+      value(this: Differ<T>) {
+        if (Array.isArray(this)) {
+          return this;
         }
 
         return keys.reduce((o, k) => {
-          o[k] = (<Record<string, unknown>> this)[`_${k}`];
+          o[k] = (<Record<string, unknown>>this)[`_${k}`];
           return o;
-        }, <Record<string, unknown>> {});
+        }, <Record<string, unknown>>{});
       },
     });
   }
@@ -63,55 +53,60 @@ function injectFields<T>(objectId: string, target: T, parentTarget?: T) {
   return target;
 }
 
-export function differ<T>(target: T): T {
-  const objectId = digest(target);
-  digestMap.set(objectId, {
-    initial: objectId,
-    current: objectId,
-  });
+export function differ<T>(target: T): Differ<T> {
+  if (isDiffer(target)) {
+    return target;
+  }
 
-  target = injectFields(objectId, target);
+  const initial = digest(target);
 
-  digestMap.set(objectId, {
-    initial: digest(target),
-    current: digest(target),
-  });
+  const output: Differ<T> = {
+    ...structuredClone(target),
+    [Initial]: initial,
+    [Current]: initial,
 
-  Object.defineProperty(target, Changed, {
-    get: () =>
-      digestMap.get(objectId)!.initial !== digestMap.get(objectId)!.current,
-  });
+    get [IsNew]() {
+      return undefined;
+    },
+    get [Changed]() {
+      return this[Initial] !== this[Current];
+    },
+  };
 
-  return target;
+  return <Differ<T>>injectFields(output);
 }
 
-export function differAll<T>(target: T[]): T[] {
-  const outTarget = target.map((t) => differ(t));
+export function differAll<T>(
+  target: T[]
+): Differ<T>[] & { push(...args: T[]): number } {
+  const output = target.map((t) => differ(t));
 
-  const pushFunction = outTarget.push;
-  outTarget.push = function (...items: T[]) {
-    const itemsToPush = items.map((item) => {
-      item = differ(item);
+  const pushFunction = output.push;
+  output.push = function (...items: T[]) {
+    const itemsToPush = items.map((target) => {
+      const output = differ(target);
+      injectNew(output, true);
 
-      Object.defineProperty(item, IsNew, {
-        value: true,
-        configurable: false,
-        writable: false,
-      });
-
-      return item;
+      return output;
     });
 
     return pushFunction.apply(this, itemsToPush);
   };
 
-  return outTarget;
+  return output;
 }
 
-export function hasChanged<T>(target: T) {
-  return (<Differ> target)[Changed];
+export function injectNew<T> (target: Differ<T>, isNew: boolean | undefined) {
+  Object.defineProperty(target, IsNew, {
+    get () { return isNew },
+    configurable: false,
+  });
 }
 
-export function isNew<T>(target: T) {
-  return (<Differ> target)[IsNew] ?? false;
+export function hasChanged<T>(target: Differ<T>) {
+  return target[Changed];
+}
+
+export function isNew<T>(target: Differ<T>) {
+  return target[IsNew] ?? false;
 }
