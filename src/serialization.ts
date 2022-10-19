@@ -35,6 +35,7 @@ export function reviver(this: Record<string | number, unknown>, key: string) {
 function isSerializedLike<T>(target: T): target is SerializedLike<T> {
   return (
     typeof target === "object" &&
+    target !== null &&
     (<Record<string | symbol, unknown>>target)["Differ.Initial"] !==
       undefined &&
     (<Record<string | symbol, unknown>>target)["Differ.Current"] !== undefined

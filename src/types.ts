@@ -15,6 +15,7 @@ export type Differ<T> = T & {
 export function isDiffer<T>(target: unknown): target is Differ<T> {
   return (
     typeof target === "object" &&
+    target !== null &&
     (<Record<string | symbol, unknown>>target)[Initial] !== undefined &&
     (<Record<string | symbol, unknown>>target)[Current] !== undefined
   );
