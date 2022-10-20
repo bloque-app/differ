@@ -1,7 +1,7 @@
 {
-  "name": "@pandres95/differ",
+  "name": "@bloque/differ",
   "type": "module",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "wraps objects and arrays and keeps track of global changes around wrapped objects",
   "main": "./dist/cjs/src/index.js",
   "scripts": {
@@ -27,10 +27,12 @@
   "author": "Pablo Dorado <pablo@bloque.team>",
   "license": "MIT",
   "devDependencies": {
+    "@types/clone-deep": "^4.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "clone-deep": "^4.0.1",
     "crypto-digest-sync": "^1.0.0"
   },
   "publishConfig": {

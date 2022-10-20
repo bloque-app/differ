@@ -1,5 +1,6 @@
 import { digest } from "./digest.js";
 import { Changed, IsNew, Differ, Current, Initial, isDiffer } from "./types.js";
+import cloneDeep from "clone-deep";
 
 function injectFields<T extends Record<string, unknown>>(
   target: T,
@@ -65,7 +66,7 @@ export function differ<T>(target: T): Differ<T> {
   const initial = digest(target);
 
   const output: Differ<T> = {
-    ...structuredClone(target),
+    ...cloneDeep(target),
     [Initial]: initial,
     [Current]: initial,
 
