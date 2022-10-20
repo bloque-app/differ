@@ -74,9 +74,31 @@ test("#differ()", async (t) => {
   await t.test("native subindices should be injected", () => {
     const target = differ({
       a: 3,
-      b: [ 2, "a" ],
+      b: [2, "a"],
       c: undefined,
     });
+
+    target.a = 1;
+
+    assert(hasChanged(target));
+  });
+
+  await t.test("Differ over proxied objects should not fail", () => {
+    const object = {
+      a: 3,
+    };
+
+    const proxiedObject = new Proxy<typeof object>(object, {
+      get(target: Record<string, unknown>, p: string) {
+        return target[p];
+      },
+      set(target: Record<string, unknown>, p: string, newValue: unknown) {
+        target[p] = newValue;
+        return true;
+      }
+    });
+
+    const target = differ(proxiedObject);
 
     target.a = 1;
 
